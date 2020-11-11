@@ -1,0 +1,40 @@
+---
+title: "Covid 19: across the world with Plotly"
+author: "Fanuin"
+date: "11th November 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, include=TRUE)
+```
+
+```{r}
+#install.packages("plotly", "countrycode")
+library(plotly)
+library(countrycode)
+```
+## Read Covid-19 Data from Google
+
+```{r}
+data <- read.csv("https://storage.googleapis.com/covid19-open-data/v2/latest/main.csv")
+
+#calculate covid-19 mortality and prevalence in terms on 100000 persons
+data.country <- data %>%
+                filter(subregion1_code=='') %>%
+                mutate(cov19_prev=total_confirmed/population*100000, cov19_decsd=total_deceased/population*100000)
+
+
+library(countrycode)
+data.country$continent <- countrycode(sourcevar = data.country[, "country_name"],
+                            origin = "country.name",
+                            destination = "continent")
+
+```
+
+## Show the regional variation of covid-19 mortality and prevalence:
+
+```{r}
+plot_ly(data.country, x = ~cov19_prev, y = ~cov19_decsd, type="scatter", color = ~continent,
+         mode = 'markers', hoverinfo = 'text',text = ~paste('</br> Country: ', country_name))
+```
